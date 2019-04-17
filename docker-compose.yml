@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.6.0
+    build:
+      context: logstash/.
+      dockerfile: Dockerfile
+
+    environment:
+      LS_OPTS: "--config.reload.automatic"
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.0
+    ports:
+      - "5601:5601"
+  presto-proxy:
+    image: google/cloud-sdk
+    command: ["tail", "-f", "/dev/null"]
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
+  elasticsearch:
+    image: elasticsearch:7.6.0
+    environment:
+      - discovery.type=single-node
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://localhost:1358,http://127.0.0.1:1358
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-credentials=true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  elastichq:
+    image: elastichq/elasticsearch-hq
+    ports:
+      - "5000:5000"
+  mssql:
+    image: microsoft/mssql-server-linux:2017-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password123
+      - MSSQL_PID=Developer
+    volumes:
+    - mssqldata:/var/opt/mssql
+volumes:
+  mssqldata:
+

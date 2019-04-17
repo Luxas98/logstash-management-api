@@ -1,0 +1,823 @@
+{
+  "mapping": {
+    "properties": {
+      "date": {
+        "format": "date_time_no_millis||date_optional_time",
+        "store": false,
+        "type": "date"
+      },
+      "doseQuantity": {
+        "properties": {
+          "code": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "system": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "unit": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "value": {
+            "store": false,
+            "type": "float"
+          }
+        }
+      },
+      "encounter": {
+        "properties": {
+          "reference": {
+            "analyzer": "fhir_reference_analyzer",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "display": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "identifier": {
+            "properties": {
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "type": {
+                "properties": {
+                  "text": {
+                    "analyzer": "standard",
+                    "index": true,
+                    "store": false,
+                    "type": "text"
+                  }
+                }
+              },
+              "use": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "value": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          }
+        }
+      },
+      "explanation": {
+        "properties": {
+          "reason": {
+            "properties": {
+              "coding": {
+                "properties": {
+                  "code": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "display": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              },
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            },
+            "type": "nested"
+          },
+          "reasonNotGiven": {
+            "properties": {
+              "coding": {
+                "properties": {
+                  "code": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "display": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              },
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            },
+            "type": "nested"
+          }
+        }
+      },
+      "id": {
+        "index": true,
+        "store": false,
+        "type": "keyword"
+      },
+      "identifier": {
+        "properties": {
+          "system": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "type": {
+            "properties": {
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            }
+          },
+          "use": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "value": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          }
+        },
+        "type": "nested"
+      },
+      "location": {
+        "properties": {
+          "reference": {
+            "analyzer": "fhir_reference_analyzer",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "display": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "identifier": {
+            "properties": {
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "type": {
+                "properties": {
+                  "text": {
+                    "analyzer": "standard",
+                    "index": true,
+                    "store": false,
+                    "type": "text"
+                  }
+                }
+              },
+              "use": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "value": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          }
+        }
+      },
+      "lotNumber": {
+        "index": true,
+        "store": false,
+        "type": "keyword"
+      },
+      "manufacturer": {
+        "properties": {
+          "reference": {
+            "analyzer": "fhir_reference_analyzer",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "display": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "identifier": {
+            "properties": {
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "type": {
+                "properties": {
+                  "text": {
+                    "analyzer": "standard",
+                    "index": true,
+                    "store": false,
+                    "type": "text"
+                  }
+                }
+              },
+              "use": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "value": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          }
+        }
+      },
+      "meta": {
+        "properties": {
+          "lastUpdated": {
+            "format": "date_time_no_millis||date_optional_time",
+            "store": false,
+            "type": "date"
+          },
+          "profile": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "versionId": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          }
+        }
+      },
+      "note": {
+        "type": "nested",
+        "properties": {
+          "text": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "time": {
+            "format": "date_time_no_millis||date_optional_time",
+            "store": false,
+            "type": "date"
+          },
+          "authorReference": {
+            "properties": {
+              "reference": {
+                "analyzer": "fhir_reference_analyzer",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "display": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "identifier": {
+                "properties": {
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "type": {
+                    "properties": {
+                      "text": {
+                        "analyzer": "standard",
+                        "index": true,
+                        "store": false,
+                        "type": "text"
+                      }
+                    }
+                  },
+                  "use": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "value": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              }
+            }
+          },
+          "authorString": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          }
+        }
+      },
+      "notGiven": {
+        "store": false,
+        "type": "boolean"
+      },
+      "patient": {
+        "properties": {
+          "reference": {
+            "analyzer": "fhir_reference_analyzer",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "display": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "identifier": {
+            "properties": {
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "type": {
+                "properties": {
+                  "text": {
+                    "analyzer": "standard",
+                    "index": true,
+                    "store": false,
+                    "type": "text"
+                  }
+                }
+              },
+              "use": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "value": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          }
+        }
+      },
+      "practitioner": {
+        "properties": {
+          "role": {
+            "properties": {
+              "coding": {
+                "properties": {
+                  "code": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "display": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              },
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            }
+          },
+          "actor": {
+            "properties": {
+              "reference": {
+                "analyzer": "fhir_reference_analyzer",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "display": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "identifier": {
+                "properties": {
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "type": {
+                    "properties": {
+                      "text": {
+                        "analyzer": "standard",
+                        "index": true,
+                        "store": false,
+                        "type": "text"
+                      }
+                    }
+                  },
+                  "use": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "value": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              }
+            }
+          }
+        },
+        "type": "nested"
+      },
+      "reaction": {
+        "properties": {
+          "date": {
+            "format": "date_time_no_millis||date_optional_time",
+            "store": false,
+            "type": "date"
+          },
+          "detail": {
+            "properties": {
+              "reference": {
+                "analyzer": "fhir_reference_analyzer",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "display": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "identifier": {
+                "properties": {
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "type": {
+                    "properties": {
+                      "text": {
+                        "analyzer": "standard",
+                        "index": true,
+                        "store": false,
+                        "type": "text"
+                      }
+                    }
+                  },
+                  "use": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "value": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              }
+            }
+          },
+          "reported": {
+            "store": false,
+            "type": "boolean"
+          }
+        }
+      },
+      "resourceType": {
+        "index": true,
+        "store": false,
+        "type": "keyword"
+      },
+      "route": {
+        "properties": {
+          "coding": {
+            "properties": {
+              "code": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "display": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          },
+          "text": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          }
+        }
+      },
+      "site": {
+        "properties": {
+          "coding": {
+            "properties": {
+              "code": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "display": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          },
+          "text": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          }
+        }
+      },
+      "status": {
+        "index": true,
+        "store": false,
+        "type": "keyword"
+      },
+      "vaccineCode": {
+        "properties": {
+          "coding": {
+            "properties": {
+              "code": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "display": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              },
+              "system": {
+                "index": true,
+                "store": false,
+                "type": "keyword"
+              }
+            },
+            "type": "nested"
+          },
+          "text": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          }
+        }
+      },
+      "vaccinationProtocol": {
+        "type": "nested",
+        "properties": {
+          "doseSequence": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "description": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "authority": {
+            "properties": {
+              "reference": {
+                "analyzer": "fhir_reference_analyzer",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "display": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              },
+              "identifier": {
+                "properties": {
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "type": {
+                    "properties": {
+                      "text": {
+                        "analyzer": "standard",
+                        "index": true,
+                        "store": false,
+                        "type": "text"
+                      }
+                    }
+                  },
+                  "use": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "value": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              }
+            }
+          },
+          "series": {
+            "analyzer": "standard",
+            "index": true,
+            "store": false,
+            "type": "text"
+          },
+          "seriesDoses": {
+            "index": true,
+            "store": false,
+            "type": "keyword"
+          },
+          "targetDisease": {
+            "properties": {
+              "coding": {
+                "properties": {
+                  "code": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "display": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              },
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            },
+            "type": "nested"
+          },
+          "doseStatus": {
+            "properties": {
+              "coding": {
+                "properties": {
+                  "code": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "display": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              },
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            }
+          },
+          "doseStatusReason": {
+            "properties": {
+              "coding": {
+                "properties": {
+                  "code": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "display": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  },
+                  "system": {
+                    "index": true,
+                    "store": false,
+                    "type": "keyword"
+                  }
+                },
+                "type": "nested"
+              },
+              "text": {
+                "analyzer": "standard",
+                "index": true,
+                "store": false,
+                "type": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "meta": {
+    "lastUpdated": "2019-04-22T19:09:31+02:00",
+    "versionId": "STU3"
+  },
+  "resourceType": "Immunization"
+}

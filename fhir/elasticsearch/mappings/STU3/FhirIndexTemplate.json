@@ -1,0 +1,22 @@
+{
+  "index_patterns": [
+    "fhir*"
+  ],
+  "settings": {
+    "number_of_shards": 1,
+    "analysis": {
+      "analyzer": {
+        "fhir_reference_analyzer": {
+          "type": "custom",
+          "tokenizer": "reference_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "reference_tokenizer": {
+          "type": "pattern",
+          "pattern": "[:\/]"
+        }
+      }
+    }
+  }
+}

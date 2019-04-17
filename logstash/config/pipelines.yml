@@ -1,0 +1,10 @@
+# This file is where you define your pipelines. You can define multiple.
+# For more information on multiple pipelines, see the documentation:
+#   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
+
+#- pipeline.id: patient
+#  path.config: "/usr/share/logstash/pipeline/patient.conf"
+#- pipeline.id: encounter
+#  path.config: "/usr/share/logstash/pipeline/encounter.private.conf"
+- pipeline.id: mssql_patient_input
+  path.config: "/usr/share/logstash/pipeline/patient.mssql.conf"

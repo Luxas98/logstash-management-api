@@ -1,0 +1,329 @@
+image: node:13.8.0
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_DRIVER: overlay2
+  RUNNER_EXECUTOR: "kubernetes"
+  REGISTRY: "${DOCKER_HOSTNAME}/${PROJECT_ID}"
+  IMAGE: "$CI_PROJECT_NAME-${SERVICE}"
+  TAG: "$CI_COMMIT_SHORT_SHA"
+#  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  API_DIR: "src"
+  PROJECT: "db-fhir-api"
+  TEST_DIR: "tests"
+  GIT_SUBMODULE_STRATEGY: recursive # https://docs.gitlab.com/ee/ci/git_submodules.html
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+#cache:
+#  paths:
+#    - "$CI_PROJECT_DIR/.cache/pip"
+#    - venv/
+#  key: "python-ci-deps"
+
+# https://docs.gitlab.com/ee/ci/caching/#good-caching-practices
+
+before_script:
+  - echo "Before script"
+#  - python -V # Print out python version for debugging
+#  - pip install --upgrade pip
+#  - pip install -U --force-reinstall virtualenv
+#  - virtualenv venv
+#  - source venv/bin/activate
+
+stages:
+  - test
+  - build
+  - deploy
+
+.lint_template: &lint_definition
+  stage: test
+  script:
+    # caching reference: https://www.jujens.eu/posts/en/2017/Aug/20/gitlabci-python-cache/
+    - echo "Formatting and linting ${API_DIR}/"
+#    - pip install yapf flake8 pylint pylint-exit
+#    - yapf --recursive --in-place ${API_DIR}/
+#    - flake8 --max-line-length=80 --exclude ${API_DIR}/${SERVICE}/gcloudfunction ${API_DIR}/
+#    - pylint --rcfile=.pylintrc ${API_DIR}/**/*.py || pylint-exit $?
+
+.test_template: &test_definition
+  stage: test
+  script:
+    - echo "Testing directory ${API_DIR}"
+#    - pip install pytest
+#    - pytest ${TEST_DIR}/
+
+.dockerize: &dockerize_defnition
+  stage: build
+  image: docker:git
+  services:
+    - docker:18-dind
+  # docker caching refs:
+  # https://docs.gitlab.com/ee/ci/caching/#where-the-caches-are-stored
+  # https://docs.gitlab.com/runner/executors/docker.html#the-builds-and-cache-storage
+  cache: {}
+  artifacts:
+    # refs: https://docs.gitlab.com/ee/ci/yaml/#artifactsname
+    # refs: https://docs.gitlab.com/ee/user/project/pipelines/job_artifacts.html#browsing-artifacts
+    name: "api-build-artifacts"
+    paths:
+      - "$CI_PROJECT_DIR/image_changes/${IMAGE}-${TAG}.txt"
+  before_script:
+    - docker info
+    - cat "${DOCKER_PASSWORD}" | docker login "https://${DOCKER_HOSTNAME}" -u "${DOCKER_USERNAME}" --password-stdin
+  script:
+    - docker build -t "${REGISTRY}/${IMAGE}:$TAG" -f flaskapp/Dockerfile .
+    - docker push "${REGISTRY}/${IMAGE}:$TAG"
+    # save image names & always overwrite the content
+    - mkdir -p $CI_PROJECT_DIR/image_changes
+    - echo "${REGISTRY}/${IMAGE}:$TAG" > "$CI_PROJECT_DIR/image_changes/${IMAGE}-${TAG}.txt"
+
+.dev-deploy: &dev_deploy_defnition
+  stage: deploy
+  image:
+    name: bitlayer/kustomize:v2.0.3
+    # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image
+    entrypoint: [""]
+  cache: {}
+  before_script:
+    - ls -lah $CI_PROJECT_DIR/image_changes/
+    - apk add curl git openssh
+    # https://docs.gitlab.com/ee/user/project/new_ci_build_permissions_model.html#prerequisites-to-use-the-new-permissions-model
+    - git clone --single-branch --branch argocd https://gitlab-ci-token:${WRITE_TOKEN}@gitlab.com/${CONFIG_REPO} config_repo # gitlab env var
+#    - git clone --single-branch --branch argocd https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CONFIG_REPO} config_repo # gitlab env var
+    # https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+    - git config --global user.email ${GITLAB_USER_EMAIL}
+    - git config --global user.name ${GITLAB_USER_NAME}
+    - ENV_DIR=$(sh ./config_repo/get_directory.sh)
+    - cd config_repo/$PROJECT/overlays/$ENV_DIR # changing directly data-services dedicated folder
+  script:
+    # kustomize edit set image $IMAGE_NAME:$TAG
+    - echo "Updating config image"
+    - sh $CI_PROJECT_DIR/config_repo/set_images.sh "$CI_PROJECT_DIR/image_changes/"
+    # git push changes
+    - git add . # then add changes of all jobs
+    - git commit -m "Updating data service image tags to $TAG"
+    - echo "Pushing config to repo, for $ENV env"
+    - git push
+  dependencies:
+    - dockerize:db-fhir-api
+    - trigger-dockerize:db-fhir-api
+
+.deploy: &deploy_defnition
+  stage: deploy
+  image: alpine
+  cache: {}
+  before_script:
+    - apk add curl git openssh
+    - git clone --single-branch --branch argocd https://gitlab-ci-token:${WRITE_TOKEN}@gitlab.com/${CONFIG_REPO} config_repo
+#    - git clone --single-branch --branch argocd https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/${CONFIG_REPO} config_repo
+    - git config --global user.email ${GITLAB_USER_EMAIL}
+    - git config --global user.name ${GITLAB_USER_NAME}
+  script:
+    - FROM_ENV=$(sh config_repo/get_env.sh)
+    - cd config_repo/$PROJECT/overlays # use a directory one level above the original
+    - echo "Promoting images from dev to $ENV ..."
+    - echo "Diffing $ENV and $FROM_ENV kustomization files ..."
+    - echo $(diff "./$ENV/kustomization.yaml" "./$FROM_ENV/kustomization.yaml" > "./${FROM_ENV}2$ENV.patch")
+    - echo "Patching $ENV kustomization file ..."
+    - patch "./$ENV/kustomization.yaml" -i "./${FROM_ENV}2$ENV.patch"
+    - git add ./$ENV # then add changes of all jobs
+    - git commit -m "Promoting image tags in $ENV env"
+    - echo "Pushing config to repo, for $ENV env"
+    - git push
+
+###############################
+### ENV promotion ###
+###############################
+
+deploy:dev:
+  <<: *dev_deploy_defnition
+  variables:
+    ENV: dev
+  only:
+    changes:
+      - flaskapp/**/*.py
+      - Dockerfile
+  except:
+    refs:
+      - master
+      - triggers
+
+trigger-deploy:dev:
+  <<: *dev_deploy_defnition
+  variables:
+    ENV: dev
+  only:
+    variables:
+      - $DEPLOY == "dev"
+  except:
+    refs:
+      - master
+
+deploy:staging:
+  <<: *deploy_defnition
+  variables:
+    ENV: staging
+  only:
+    refs:
+      - master
+    changes:
+      - flaskapp/**/*.py
+      - Dockerfile
+  except:
+    - tags
+    - triggers
+
+trigger-deploy:staging:
+  <<: *deploy_defnition
+  variables:
+    ENV: staging
+  only:
+    refs:
+      - master
+    variables:
+      - $DEPLOY == "staging"
+  except:
+    refs:
+      - tags
+
+deploy:prod:
+  <<: *deploy_defnition
+  variables:
+    ENV: prod
+  only:
+    refs:
+      - master
+      - tags
+    variables:
+      # if the following combo doesn't work
+      # remove both master and variables
+      # accept pushes to master or tags AND
+      # only refs not related to master, ie.
+      # yielding: accept only tags to master
+      - $CI_COMMIT_REF_NAME != "master"
+    changes:
+      - flaskapp/**/*
+  except:
+    - triggers
+  when: manual
+
+trigger-deploy:prod:
+  <<: *deploy_defnition
+  variables:
+    ENV: prod
+  only:
+    refs:
+      - master
+      - tags
+    variables:
+      - $DEPLOY == "prod"
+  when: manual
+
+######################
+### Client DB Mapping Generator API ###
+######################
+
+lint:db-fhir-api:
+  <<: *lint_definition
+  variables:
+    SERVICE: db-fhir-api
+  only:
+    changes:
+      - flaskapp/**/*.py
+  except:
+    refs:
+      - master
+      - triggers
+
+test:db-fhir-api:
+  <<: *test_definition
+  variables:
+    SERVICE: fhir-api
+  only:
+    changes:
+      - flaskapp/**/*.py
+  except:
+    refs:
+      - master
+      - triggers
+
+dockerize:db-fhir-api:
+  <<: *dockerize_defnition
+  variables:
+    SERVICE: db-fhir-api
+  only:
+    changes:
+      - flaskapp/**/*.py
+  except:
+    refs:
+      - master
+      - triggers
+
+trigger-dockerize:db-fhir-api:
+  <<: *dockerize_defnition
+  variables:
+    SERVICE: db-fhir-api
+  only:
+    variables:
+      - $BUILD_PREDICTION
+  except:
+    refs:
+      - master
+
+######################
+### Logstash ###
+######################
+
+#lint:logstash:
+#  <<: *lint_definition
+#  variables:
+#    SERVICE: logstash
+#  only:
+#    changes:
+#      - logstash/**/*.*
+#  except:
+#    refs:
+#      - master
+#      - triggers
+#
+#test:logstash:
+#  <<: *test_definition
+#  variables:
+#    SERVICE: logstash
+#  only:
+#    changes:
+#      - logstash/**/*.*
+#  except:
+#    refs:
+#      - master
+#      - triggers
+#
+#dockerize:logstash:
+#  <<: *dockerize_defnition
+#  variables:
+#    SERVICE: logstash
+#  only:
+#    changes:
+#      - logstash/**/*.*
+#
+#  except:
+#    refs:
+#      - master
+#      - triggers
+#
+#trigger-dockerize:logstash:
+#  <<: *dockerize_defnition
+#  variables:
+#    SERVICE: logstash
+#  only:
+#    variables:
+#      - $BUILD_PREDICTION
+#  except:
+#    refs:
+#      - master

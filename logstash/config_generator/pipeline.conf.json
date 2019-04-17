@@ -1,0 +1,22 @@
+{
+    "host": "mssql",
+    "port": 1433,
+    "password": "Password123",
+    "username": "sa",
+    "table_name": "PATIENT",
+    "primary_key": "ID",
+    "joins": [
+        {
+            "table_name": "ADDRESSES",
+            "key": "PATIENT_ID"
+        }
+    ],
+    "fields_mappings": [
+    {
+        "field_name": "active",
+        "db_column": "is_used",
+        "logstash_field": "[active]",
+        "column_type": "boolean"
+    }
+    ]
+}

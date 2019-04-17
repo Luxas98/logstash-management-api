@@ -1,0 +1,174 @@
+openapi: 3.0.0
+info:
+  description: |
+  title: "HealthplusAI DB Management API"
+  version: "1.0.0"
+servers:
+  - url: "https://staging.endpoints.staging-be3597ca.cloud.goog"
+x-google-endpoints:
+  - name: "https://staging.endpoints.staging-be3597ca.cloud.goog"
+    target: "https://staging.endpoints.staging-be3597ca.cloud.goog"
+paths:
+  "/api/{_version}/field/{resource}":
+    get:
+      operationId: ESfieldList
+      parameters:
+        - in: path
+          name: resource
+          schema:
+            type: string
+        - in: path
+          name: _version
+          schema:
+            type: string
+      responses:
+        200:
+          description: "List of available ElasticSearch field mappings in logstash format"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+      description: "Return list of available ElasticSearch field mappings for given resource"
+      security:
+        - BearerAuth: []
+        - api_key: []
+  "/api/{_version}/schema":
+    get:
+      operationId: DBfieldList
+      parameters:
+        - in: path
+          required: true
+          name: _version
+          schema:
+            type: string
+        - in: query
+          name: host
+          schema:
+            type: string
+        - in: query
+          name: database
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: password
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: table
+          schema:
+            type:
+              string
+      responses:
+        200:
+          description: "List of available column names for specified database table"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      security:
+        - BearerAuth: []
+        - api_key: []
+  "/api/{_version}/logstashconfig/{resource}":
+    get:
+      operationId: pipelineList
+      responses:
+        200:
+          description: "Returns current logstash pipeline configuration for the resource or example configuration for creating new logstash pipeline"
+      parameters:
+        - in: path
+          name: resource
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: _version
+          schema:
+            type: string
+          required: true
+    post:
+      parameters:
+        - in: path
+          name: resource
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: _version
+          schema:
+            type: string
+          required: true
+      operationId: pipelineCreate
+      description: "Creates a logstash pipeline configuration for given input configuration"
+      responses:
+        200:
+          description: "Returns newly created logstash pipeline config"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                host:
+                  type: string
+                port:
+                  type: integer
+                password:
+                  type: string
+                username:
+                  type: string
+                table_name:
+                  type: string
+                primary_key:
+                  type: string
+                joins:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      table_name:
+                        type: string
+                      key:
+                        type: string
+                field_mappings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field_name:
+                        type: string
+                      db_column:
+                        type: string
+                      logstash_field:
+                        type: string
+                      column_type:
+                        type: string
+      security:
+        - BearerAuth: []
+        - api_key: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      in: header
+      name: Authorization
+      type: apiKey
+    api_key:
+      in: query
+      name: key
+      type: apiKey
+    firebase:
+      flows:
+        implicit:
+          authorizationUrl: https://staging.endpoints.staging-be3597ca.cloud.goog
+      type: oauth2
+      x-google-audiences: health-plus-web
+      x-google-issuer: https://securetoken.google.com/health-plus-web
+      x-google-jwks_uri: https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com
