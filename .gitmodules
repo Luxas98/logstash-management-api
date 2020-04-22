@@ -1,3 +1,6 @@
 [submodule "fhir_fastavro"]
 	path = fhir_fastavro
 	url = https://github.com/Luxas98/fhir-fastavro
+[submodule "gcloudlogging"]
+	path = gcloudlogging
+	url = git@github.com:Luxas98/gcloudlogging.git
